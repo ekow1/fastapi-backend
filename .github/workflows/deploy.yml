@@ -16,25 +16,23 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_KEY }}
         script: |
-          # Create directory structure and user if needed
-          sudo mkdir -p /home/app-fastapi
-          sudo useradd -m -d /home/app-fastapi app-fastapi 2>/dev/null || true
-          sudo usermod -aG docker app-fastapi 2>/dev/null || true
-          
-          cd /home/app-fastapi
+          # Ensure /home/ubuntu exists
+          mkdir -p /home/ubuntu
+          cd /home/ubuntu
 
-          if [ ! -d "app" ]; then
+          # If the app-fastapi directory does not exist, clone it
+          if [ ! -d "app-fastapi" ]; then
             echo "Cloning repo..."
-            git clone -b ${{ github.ref_name }} https://github.com/${{ github.repository }}.git app
+            git clone -b ${{ github.ref_name }} https://github.com/${{ github.repository }}.git app-fastapi
           else
             echo "Repo exists. Pulling updates..."
-            cd app
+            cd app-fastapi
             git reset --hard
             git pull origin ${{ github.ref_name }}
             cd ..
           fi
 
-          cd app
+          cd app-fastapi
           
           # Debug: Check if files exist
           echo "Current directory: $(pwd)"
