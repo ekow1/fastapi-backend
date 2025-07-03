@@ -70,6 +70,10 @@ jobs:
           docker service ls
           docker service ps app_stack_app
           
+          # Check service logs for errors
+          echo "Checking service logs..."
+          docker service logs app_stack_app
+          
           # Test if port 4000 is accessible
           echo "Testing port 4000..."
           if curl -f http://localhost:4000/health > /dev/null 2>&1; then
@@ -78,4 +82,12 @@ jobs:
             echo "❌ Port 4000 is not accessible"
             echo "Checking what's running on port 4000:"
             netstat -tlnp | grep :4000 || echo "Nothing running on port 4000"
+            
+            # Check if there are any containers running
+            echo "Checking all containers:"
+            docker ps -a
+            
+            # Check if the image was built correctly
+            echo "Checking Docker images:"
+            docker images | grep app-labs
           fi 
