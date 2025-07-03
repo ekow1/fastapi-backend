@@ -114,7 +114,12 @@ jobs:
           
           # Test if port 4000 is accessible
           echo "Testing port 4000..."
-          if curl -f http://localhost:4000/health > /dev/null 2>&1; then
+          
+          # Wait a bit more for the app to fully start
+          sleep 10
+          
+          # Test with timeout and verbose output
+          if timeout 30 curl -v -f http://localhost:4000/health; then
             echo "✅ Port 4000 is accessible!"
           else
             echo "❌ Port 4000 is not accessible"
@@ -132,4 +137,8 @@ jobs:
             # Get detailed service logs
             echo "Getting detailed service logs:"
             $DOCKER_CMD service logs app_stack_app --tail 50
+            
+            # Try a different approach to test the service
+            echo "Trying to test service directly:"
+            $DOCKER_CMD exec $(docker ps -q --filter "name=app_stack_app") curl -f http://localhost:4000/health || echo "Direct container test failed"
           fi 
