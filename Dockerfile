@@ -1,31 +1,32 @@
+# Base image
 FROM python:3.11-slim
 
+# Set working directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# Install curl and dependencies for uv
+RUN apt-get update && apt-get install -y curl build-essential && \
+    curl -Ls https://astral.sh/uv/install.sh | bash
 
-# Copy requirements first for better caching
+# Ensure uv is available in PATH
+ENV PATH="/root/.cargo/bin:$PATH"
+
+# Copy dependency file
 COPY pyproject.toml .
 
-# Install uv and dependencies
-RUN curl -Ls https://astral.sh/uv/install.sh | bash
-ENV PATH="/root/.local/bin:$PATH"
+# Install Python packages using uv
+RUN uv pip install --upgrade pip
+RUN uv pip install fastapi uvicorn[standard]
 
-# Install dependencies
-RUN uv sync --system
-
-# Copy the rest of the application
+# Copy the full app source code
 COPY . .
 
-# Expose port
+# Expose the FastAPI port
 EXPOSE 4000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:4000/health')"
 
-# Start FastAPI using uvicorn directly
+# Run the FastAPI app using uvicorn
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "4000"] 

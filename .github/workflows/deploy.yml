@@ -66,9 +66,9 @@ jobs:
           $DOCKER_CMD stack rm app_stack || true
           sleep 10
           
-          # Build the Docker image using the simple Dockerfile
+          # Build the Docker image
           echo "Building Docker image..."
-          $DOCKER_CMD build -t app-labs:latest -f Dockerfile.simple .
+          $DOCKER_CMD build -t app-labs:latest .
           
           # Check if image was built successfully
           echo "Checking if image was built:"
