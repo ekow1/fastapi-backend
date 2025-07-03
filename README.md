@@ -161,7 +161,7 @@ The workflow is configured to deploy directly to your EC2 instance using Docker 
 
 1. **Add GitHub Secrets**:
    - `EC2_HOST`: Your EC2 instance public IP or domain
-   - `EC2_USER`: SSH username (usually `ubuntu`)
+   - `EC2_USER`: SSH username (usually `ubuntu` - the workflow will create `app-fastapi` user)
    - `EC2_KEY`: Your private SSH key for EC2 access
 
 2. **Prepare your EC2 instance**:
