@@ -30,6 +30,19 @@ jobs:
 
           cd app
           
+          # Debug: Check if files exist
+          echo "Current directory: $(pwd)"
+          echo "Files in directory:"
+          ls -la
+          
+          # Check if docker-stack.yml exists
+          if [ ! -f "docker-stack.yml" ]; then
+            echo "ERROR: docker-stack.yml not found!"
+            exit 1
+          fi
+          
+          echo "docker-stack.yml found, proceeding with deployment..."
+          
           # Check if user is in docker group, if not use sudo
           if docker ps > /dev/null 2>&1; then
             echo "Using docker without sudo"
