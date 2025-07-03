@@ -29,4 +29,12 @@ jobs:
           fi
 
           cd app
-          docker stack deploy -c docker-stack.yml app_stack 
+          
+          # Check if user is in docker group, if not use sudo
+          if docker ps > /dev/null 2>&1; then
+            echo "Using docker without sudo"
+            docker stack deploy -c docker-stack.yml app_stack
+          else
+            echo "Using docker with sudo"
+            sudo docker stack deploy -c docker-stack.yml app_stack
+          fi 
