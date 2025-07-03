@@ -24,12 +24,6 @@ services:
         parallelism: 1
         delay: 5s
         order: stop-first
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:4000/health')"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
     networks:
       - app-network
 
