@@ -1,0 +1,32 @@
+name: Auto Deploy to EC2 with Docker Stack
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: SSH to EC2 and deploy
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_KEY }}
+        script: |
+          cd /home/ubuntu
+
+          if [ ! -d "app" ]; then
+            echo "Cloning repo..."
+            git clone -b ${{ github.ref_name }} https://github.com/${{ github.repository }}.git app
+          else
+            echo "Repo exists. Pulling updates..."
+            cd app
+            git reset --hard
+            git pull origin ${{ github.ref_name }}
+          fi
+
+          cd app
+          docker stack deploy -c docker-stack.yml app_stack 
