@@ -55,24 +55,42 @@ jobs:
           # Check if user is in docker group, if not use sudo
           if docker ps > /dev/null 2>&1; then
             echo "Using docker without sudo"
-            docker stack deploy -c docker-stack.yml app_stack
+            DOCKER_CMD="docker"
           else
             echo "Using docker with sudo"
-            sudo docker stack deploy -c docker-stack.yml app_stack
+            DOCKER_CMD="sudo docker"
           fi
+          
+          # Build the Docker image
+          echo "Building Docker image..."
+          $DOCKER_CMD build -t app-labs:latest .
+          
+          # Check if image was built successfully
+          echo "Checking if image was built:"
+          $DOCKER_CMD images | grep app-labs
+          
+          # Deploy the stack
+          echo "Deploying Docker stack..."
+          $DOCKER_CMD stack deploy -c docker-stack.yml app_stack
           
           # Wait for service to be ready
           echo "Waiting for service to start..."
-          sleep 10
+          sleep 15
           
           # Check if service is running
           echo "Checking service status..."
-          docker service ls
-          docker service ps app_stack_app
+          $DOCKER_CMD service ls
+          $DOCKER_CMD service ps app_stack_app
           
           # Check service logs for errors
           echo "Checking service logs..."
-          docker service logs app_stack_app
+          $DOCKER_CMD service logs app_stack_app
+          
+          # Install netstat for debugging if not available
+          if ! command -v netstat &> /dev/null; then
+            echo "Installing net-tools for netstat..."
+            sudo apt-get update && sudo apt-get install -y net-tools
+          fi
           
           # Test if port 4000 is accessible
           echo "Testing port 4000..."
@@ -85,9 +103,13 @@ jobs:
             
             # Check if there are any containers running
             echo "Checking all containers:"
-            docker ps -a
+            $DOCKER_CMD ps -a
             
             # Check if the image was built correctly
             echo "Checking Docker images:"
-            docker images | grep app-labs
+            $DOCKER_CMD images | grep app-labs
+            
+            # Get detailed service logs
+            echo "Getting detailed service logs:"
+            $DOCKER_CMD service logs app_stack_app --tail 50
           fi 
