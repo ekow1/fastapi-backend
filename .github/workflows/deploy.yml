@@ -44,6 +44,14 @@ jobs:
           
           echo "docker-stack.yml found, proceeding with deployment..."
           
+          # Check if Docker Swarm is initialized
+          if ! docker info | grep -q "Swarm: active"; then
+            echo "Initializing Docker Swarm..."
+            docker swarm init
+          else
+            echo "Docker Swarm is already active"
+          fi
+          
           # Check if user is in docker group, if not use sudo
           if docker ps > /dev/null 2>&1; then
             echo "Using docker without sudo"
@@ -51,4 +59,23 @@ jobs:
           else
             echo "Using docker with sudo"
             sudo docker stack deploy -c docker-stack.yml app_stack
+          fi
+          
+          # Wait for service to be ready
+          echo "Waiting for service to start..."
+          sleep 10
+          
+          # Check if service is running
+          echo "Checking service status..."
+          docker service ls
+          docker service ps app_stack_app
+          
+          # Test if port 4000 is accessible
+          echo "Testing port 4000..."
+          if curl -f http://localhost:4000/health > /dev/null 2>&1; then
+            echo "✅ Port 4000 is accessible!"
+          else
+            echo "❌ Port 4000 is not accessible"
+            echo "Checking what's running on port 4000:"
+            netstat -tlnp | grep :4000 || echo "Nothing running on port 4000"
           fi 
